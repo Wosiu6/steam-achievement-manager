@@ -954,7 +954,7 @@ namespace SAM.Game
 
             var achievement = lv
                 .Where(x => !x.Checked)
-                .First();
+                .FirstOrDefault();
 
             if (achievement != null)
             {
@@ -967,9 +967,10 @@ namespace SAM.Game
             }
             else
             {
-                progressBar.Visible=false;
                 backgroundWorker.Stop();
-                _UnlockLegitButton.Visible = true;
+                secondsCounter.Stop();
+
+                HideProgressLegit();
                 MessageBox.Show("All achievements completed legitemately.");
             }
             
