@@ -34,6 +34,7 @@ namespace SAM.Game.Stats
         public string Name;
         public string Description;
         public ListViewItem Item;
+        public double Percent;
 
         #region public int ImageIndex;
         public int ImageIndex

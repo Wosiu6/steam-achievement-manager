@@ -9,9 +9,9 @@ There are some changes to the code since the last closed-source release:
 - Icons have been replaced with ones from the Fugue Icons set.
 - Version has been bumped to 7.0.x.x to indicate the open-source release.
 
-[Download latest release](https://github.com/gibbed/SteamAchievementManager/releases/latest).
+[Download latest release](https://github.com/JDM170/SteamAchievementManager/releases/latest).
 
-[![Build status](https://ci.appveyor.com/api/projects/status/00vic6jliar6j0ol/branch/master?svg=true)](https://ci.appveyor.com/project/gibbed/steamachievementmanager/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/iovgeotwg1xtf7ik?svg=true)](https://ci.appveyor.com/project/JDM170/steamachievementmanager)
 
 ## Attribution
 

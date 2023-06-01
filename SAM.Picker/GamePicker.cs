@@ -1,4 +1,5 @@
 /* Copyright (c) 2019 Rick (rick 'at' gibbed 'dot' us)
+ * Copyright (c) 2018-2019 Jan Klass (kissaki@posteo.de)
  * 
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -38,14 +39,17 @@ namespace SAM.Picker
 {
     internal partial class GamePicker : Form
     {
+        private static string VersionAgnosticLocalAppdata = Directory.GetParent(Application.LocalUserAppDataPath).ToString();
+        private static string CacheDir = Path.Combine(VersionAgnosticLocalAppdata, "cache");
+
         private readonly API.Client _SteamClient;
 
-        private readonly Dictionary<uint, GameInfo> _Games;
-        private readonly List<GameInfo> _FilteredGames;
-        private int _SelectedGameIndex;
+        private readonly Dictionary<uint, GameInfo> _Games = new Dictionary<uint, GameInfo>();
+        private readonly List<GameInfo> _FilteredGames = new List<GameInfo>();
+        private int _SelectedGameIndex = -1;
 
-        private readonly List<string> _LogosAttempted;
-        private readonly ConcurrentQueue<GameInfo> _LogoQueue;
+        private readonly List<string> _LogosAttempted = new List<string>();
+        private readonly ConcurrentQueue<GameInfo> _LogoQueue = new ConcurrentQueue<GameInfo>();
 
         // ReSharper disable PrivateFieldCanBeConvertedToLocalVariable
         private readonly API.Callbacks.AppDataChanged _AppDataChangedCallback;
@@ -53,12 +57,6 @@ namespace SAM.Picker
 
         public GamePicker(API.Client client)
         {
-            this._Games = new Dictionary<uint, GameInfo>();
-            this._FilteredGames = new List<GameInfo>();
-            this._SelectedGameIndex = -1;
-            this._LogosAttempted = new List<string>();
-            this._LogoQueue = new ConcurrentQueue<GameInfo>();
-
             this.InitializeComponent();
 
             var blank = new Bitmap(this._LogoImageList.ImageSize.Width, this._LogoImageList.ImageSize.Height);
@@ -234,6 +232,16 @@ namespace SAM.Picker
         private void DoDownloadLogo(object sender, DoWorkEventArgs e)
         {
             var info = (GameInfo)e.Argument;
+            Directory.CreateDirectory(CacheDir);
+
+            var appDir = Path.Combine(CacheDir, info.Id.ToString("D"));
+            var imgPath = Path.Combine(appDir, info.Logo + ".jpg");
+            if (File.Exists(imgPath))
+            {
+                e.Result = new LogoInfo(info.Id, new Bitmap(File.OpenRead(imgPath)));
+                return;
+            }
+
             var logoPath = string.Format(
                 CultureInfo.InvariantCulture,
                 "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/{0}/{1}.jpg",
@@ -247,6 +255,9 @@ namespace SAM.Picker
                     using (var stream = new MemoryStream(data, false))
                     {
                         var bitmap = new Bitmap(stream);
+
+                        Directory.CreateDirectory(appDir);
+                        bitmap.Save(imgPath);
                         e.Result = new LogoInfo(info.Id, bitmap);
                     }
                 }

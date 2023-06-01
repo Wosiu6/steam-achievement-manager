@@ -50,9 +50,15 @@
             this._LockAllButton = new System.Windows.Forms.ToolStripButton();
             this._InvertAllButton = new System.Windows.Forms.ToolStripButton();
             this._UnlockAllButton = new System.Windows.Forms.ToolStripButton();
+            this._UnlockLegitButton = new System.Windows.Forms.ToolStripButton();
+            this._StopLegitButton = new System.Windows.Forms.ToolStripButton();
             this._StatisticsTabPage = new System.Windows.Forms.TabPage();
             this._EnableStatsEditingCheckBox = new System.Windows.Forms.CheckBox();
             this._StatisticsDataGridView = new System.Windows.Forms.DataGridView();
+            this.backgroundWorker = new System.Windows.Forms.Timer(this.components);
+            this.progressBar = new System.Windows.Forms.ProgressBar();
+            this.countdown_lbl = new System.Windows.Forms.Label();
+            this.secondsCounter = new System.Windows.Forms.Timer(this.components);
             _ToolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this._MainToolStrip.SuspendLayout();
             this._MainStatusStrip.SuspendLayout();
@@ -200,7 +206,6 @@
             this._AchievementListView.Name = "_AchievementListView";
             this._AchievementListView.Size = new System.Drawing.Size(602, 277);
             this._AchievementListView.SmallImageList = this._AchievementImageList;
-            this._AchievementListView.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this._AchievementListView.TabIndex = 4;
             this._AchievementListView.UseCompatibleStateImageBehavior = false;
             this._AchievementListView.View = System.Windows.Forms.View.Details;
@@ -221,7 +226,9 @@
             this._AchievementsToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._LockAllButton,
             this._InvertAllButton,
-            this._UnlockAllButton});
+            this._UnlockAllButton,
+            this._UnlockLegitButton,
+            this._StopLegitButton});
             this._AchievementsToolStrip.Location = new System.Drawing.Point(3, 3);
             this._AchievementsToolStrip.Name = "_AchievementsToolStrip";
             this._AchievementsToolStrip.Size = new System.Drawing.Size(602, 25);
@@ -259,6 +266,28 @@
             this._UnlockAllButton.Text = "Unlock All";
             this._UnlockAllButton.ToolTipText = "Unlock all achievements.";
             this._UnlockAllButton.Click += new System.EventHandler(this.OnUnlockAll);
+            // 
+            // _UnlockLegitButton
+            // 
+            this._UnlockLegitButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this._UnlockLegitButton.Image = global::SAM.Game.Resources.UnlockLegit;
+            this._UnlockLegitButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this._UnlockLegitButton.Name = "_UnlockLegitButton";
+            this._UnlockLegitButton.Size = new System.Drawing.Size(23, 22);
+            this._UnlockLegitButton.Text = "Unlock Legit";
+            this._UnlockLegitButton.ToolTipText = "Unlock all achievements legitimately.";
+            this._UnlockLegitButton.Click += new System.EventHandler(this._UnlockLegitButton_Click);
+            // 
+            // _StopLegitButton
+            // 
+            this._StopLegitButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this._StopLegitButton.Enabled = false;
+            this._StopLegitButton.Image = global::SAM.Game.Resources.StopLegit;
+            this._StopLegitButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this._StopLegitButton.Name = "_StopLegitButton";
+            this._StopLegitButton.Size = new System.Drawing.Size(23, 22);
+            this._StopLegitButton.Text = "Stop unlocking legit";
+            this._StopLegitButton.Click += new System.EventHandler(this._StopLegitButton_Click);
             // 
             // _StatisticsTabPage
             // 
@@ -301,11 +330,37 @@
             this._StatisticsDataGridView.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.OnStatCellEndEdit);
             this._StatisticsDataGridView.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.OnStatDataError);
             // 
+            // backgroundWorker
+            // 
+            this.backgroundWorker.Tick += new System.EventHandler(this.timer_Tick);
+            // 
+            // progressBar
+            // 
+            this.progressBar.Location = new System.Drawing.Point(0, 366);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(530, 26);
+            this.progressBar.TabIndex = 6;
+            this.progressBar.Visible = false;
+            // 
+            // countdown_lbl
+            // 
+            this.countdown_lbl.Location = new System.Drawing.Point(536, 366);
+            this.countdown_lbl.Name = "countdown_lbl";
+            this.countdown_lbl.Size = new System.Drawing.Size(84, 26);
+            this.countdown_lbl.TabIndex = 7;
+            // 
+            // secondsCounter
+            // 
+            this.secondsCounter.Interval = 1000;
+            this.secondsCounter.Tick += new System.EventHandler(this.secondsCounter_Tick);
+            // 
             // Manager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(632, 392);
+            this.Controls.Add(this.countdown_lbl);
+            this.Controls.Add(this.progressBar);
             this.Controls.Add(this._MainToolStrip);
             this.Controls.Add(this._MainTabControl);
             this.Controls.Add(this._MainStatusStrip);
@@ -354,6 +409,12 @@
         public System.Windows.Forms.CheckBox _EnableStatsEditingCheckBox;
         private System.Windows.Forms.ToolStripButton _ResetButton;
         private System.Windows.Forms.ToolStripStatusLabel _DownloadStatusLabel;
-	}
+        private System.Windows.Forms.ToolStripButton _UnlockLegitButton;
+        private System.Windows.Forms.Timer backgroundWorker;
+        private System.Windows.Forms.ProgressBar progressBar;
+        private System.Windows.Forms.Label countdown_lbl;
+        private System.Windows.Forms.Timer secondsCounter;
+        private System.Windows.Forms.ToolStripButton _StopLegitButton;
+    }
 }
 

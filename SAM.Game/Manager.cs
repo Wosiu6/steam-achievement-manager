@@ -20,6 +20,9 @@
  *    distribution.
  */
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SAM.API.Types;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -28,6 +31,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using APITypes = SAM.API.Types;
 
@@ -52,6 +58,9 @@ namespace SAM.Game
         private readonly API.Callbacks.UserStatsReceived _UserStatsReceivedCallback;
         // ReSharper restore PrivateFieldCanBeConvertedToLocalVariable
 
+        private TimeSpan TimeForAchievements { get; set; }
+        private TimeSpan TimeForAchievement { get; set; }
+        private int Counter { get; set; }
         //private API.Callback<APITypes.UserStatsStored> UserStatsStoredCallback;
 
         public Manager(long gameId, API.Client client)
@@ -221,6 +230,8 @@ namespace SAM.Game
 
         private bool LoadUserGameStatsSchema()
         {
+            List<Achievement> achievementPercentStats = Task.Run(() => GetGlobalStats()).Result;
+
             string path;
 
             try
@@ -251,7 +262,6 @@ namespace SAM.Game
             }
 
             var currentLanguage = this._SteamClient.SteamApps008.GetCurrentGameLanguage();
-            //var currentLanguage = "german";
 
             this._AchievementDefinitions.Clear();
             this._StatDefinitions.Clear();
@@ -339,6 +349,7 @@ namespace SAM.Game
                                     string id = bit["name"].AsString("");
                                     string name = GetLocalizedString(bit["display"]["name"], currentLanguage, id);
                                     string desc = GetLocalizedString(bit["display"]["desc"], currentLanguage, "");
+                                    //Add priority
 
                                     this._AchievementDefinitions.Add(new Stats.AchievementDefinition()
                                     {
@@ -349,6 +360,7 @@ namespace SAM.Game
                                         IconLocked = bit["display"]["icon_gray"].AsString(""),
                                         IsHidden = bit["display"]["hidden"].AsBoolean(false),
                                         Permission = bit["permission"].AsInteger(0),
+                                        Percent = achievementPercentStats.First(achiev => string.Equals(achiev.Name, id, StringComparison.InvariantCultureIgnoreCase)).Percent
                                     });
                                 }
                             }
@@ -365,6 +377,21 @@ namespace SAM.Game
             }
 
             return true;
+        }
+
+        async private Task<List<Achievement>> GetGlobalStats()
+        {
+            HttpClient client = new HttpClient();
+            HttpResponseMessage response = await client.GetAsync(string.Format("https://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/?gameid={0}&format=json", _GameId.ToString()));
+            response.EnsureSuccessStatusCode();
+            string responseBody = await response.Content.ReadAsStringAsync();
+
+            Root root = JsonConvert.DeserializeObject<Root>(responseBody);
+
+
+            return root.Achievementpercentages.Achievements
+                .OrderByDescending(x => x.Percent)
+                .ToList();
         }
 
         private void OnUserStatsReceived(APITypes.UserStatsReceived param)
@@ -436,7 +463,7 @@ namespace SAM.Game
             this._AchievementListView.BeginUpdate();
             //this.Achievements.Clear();
 
-            foreach (var def in this._AchievementDefinitions)
+            foreach (var def in this._AchievementDefinitions.OrderByDescending(x => x.Percent))
             {
                 if (string.IsNullOrEmpty(def.Id) == true)
                 {
@@ -457,7 +484,8 @@ namespace SAM.Game
                     IconLocked = string.IsNullOrEmpty(def.IconLocked) ? def.IconNormal : def.IconLocked,
                     Permission = def.Permission,
                     Name = def.Name,
-                    Description = def.Description,
+                    Description = def.Description + "(" + Math.Round(def.Percent, 2) + "%)",
+                    Percent = def.Percent
                 };
 
                 var item = new ListViewItem()
@@ -465,7 +493,7 @@ namespace SAM.Game
                     Checked = isAchieved,
                     Tag = info,
                     Text = info.Name,
-                    BackColor = (def.Permission & 3) == 0 ? Color.Black : Color.FromArgb(64, 0, 0),
+                    BackColor = (def.Permission & 3) == 0 ? Color.Black : Color.FromArgb(64, 0, 0)
                 };
 
                 info.Item = item;
@@ -485,6 +513,7 @@ namespace SAM.Game
                 this._AchievementListView.Items.Add(item);
                 //this.Achievements.Add(info.Id, info);
             }
+            _AchievementListView.ListViewItemSorter = new ListViewItemComparer();
             this._AchievementListView.EndUpdate();
             this._IsUpdatingAchievementList = false;
 
@@ -730,7 +759,16 @@ namespace SAM.Game
             return true;
         }
 
+        private void StoreStatsAndAchievs()
+        {
+            OnStore(null, null, false);
+        }
+
         private void OnStore(object sender, EventArgs e)
+        {
+            OnStore(null, null, true);
+        }
+        private void OnStore(object sender, EventArgs e, bool showNotification)
         {
             int achievements = this.StoreAchievements();
             if (achievements < 0)
@@ -752,7 +790,9 @@ namespace SAM.Game
                 return;
             }
 
-            MessageBox.Show(
+            if (showNotification)
+            {
+                MessageBox.Show(
                 this,
                 string.Format(
                     CultureInfo.CurrentCulture,
@@ -762,6 +802,8 @@ namespace SAM.Game
                 "Information",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
+            }
+            
             this.RefreshStats();
         }
 
@@ -860,6 +902,106 @@ namespace SAM.Game
                     MessageBoxIcon.Error);
                 e.NewValue = e.CurrentValue;
             }
+        }
+
+        private void _UnlockLegitButton_Click(object sender, EventArgs e)
+        {
+            IEnumerable<ListViewItem> lv = _AchievementListView.Items.Cast<ListViewItem>();
+            var numberOfAchievementsToGet = lv.Where(x => !x.Checked).Count();
+
+            using (var form = new NumericPrompt())
+            {
+                var result = form.ShowDialog();
+
+                if (result == DialogResult.OK && numberOfAchievementsToGet > 0)
+                {
+                    TimeForAchievements = TimeSpan.FromMinutes(form.NumberOfMinutes ?? 60);
+                    TimeForAchievement = TimeSpan.FromMinutes((double)(form.NumberOfMinutes ?? 60) / (double)numberOfAchievementsToGet);
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            backgroundWorker.Interval = (int)TimeForAchievement.TotalMilliseconds;
+            Counter = (int)TimeForAchievement.TotalSeconds;
+            countdown_lbl.Text = Counter + "s";
+
+            SetProgressLegit(numberOfAchievementsToGet);
+
+            backgroundWorker.Start();
+            secondsCounter.Start();
+        }
+
+        private void SetProgressLegit(int numberOfAchievementsToGet)
+        {
+            _UnlockLegitButton.Enabled = false;
+            _StopLegitButton.Enabled = true; 
+            
+            progressBar.Visible = true;
+            progressBar.Maximum = numberOfAchievementsToGet;
+            progressBar.Value = 0;
+            progressBar.Step = 1;
+
+            progressBar.Show();
+            countdown_lbl.Show();
+        }
+
+        private void timer_Tick(object sender, EventArgs e)
+        {
+            IEnumerable<ListViewItem> lv = _AchievementListView.Items.Cast<ListViewItem>();
+
+            var achievement = lv
+                .Where(x => !x.Checked)
+                .First();
+
+            if (achievement != null)
+            {
+                achievement.Checked = true;
+                progressBar.Value++;
+                TimeForAchievements.Subtract(TimeSpan.FromMilliseconds(backgroundWorker.Interval));
+                RandomizeInterval();
+                StoreStatsAndAchievs();
+                Counter = (int)TimeForAchievement.TotalSeconds;
+            }
+            else
+            {
+                progressBar.Visible=false;
+                backgroundWorker.Stop();
+                _UnlockLegitButton.Visible = true;
+                MessageBox.Show("All achievements completed legitemately.");
+            }
+            
+        }
+
+        private void RandomizeInterval()
+        {
+            backgroundWorker.Interval = new Random().Next(backgroundWorker.Interval, (int)(backgroundWorker.Interval * 1.1));
+            TimeForAchievement = TimeSpan.FromMilliseconds(backgroundWorker.Interval);
+        }
+
+        private void secondsCounter_Tick(object sender, EventArgs e)
+        {
+            Counter--;
+            countdown_lbl.Text = Counter.ToString() + "s (" + TimeForAchievements.TotalMinutes + "m)";
+        }
+
+        private void _StopLegitButton_Click(object sender, EventArgs e)
+        {
+            backgroundWorker.Stop();
+            secondsCounter.Stop();
+
+            HideProgressLegit();
+        }
+
+        private void HideProgressLegit()
+        {
+            _StopLegitButton.Enabled = false;
+            _UnlockLegitButton.Enabled = true;
+
+            progressBar.Hide();
+            countdown_lbl.Hide();
         }
     }
 }

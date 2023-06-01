@@ -102,6 +102,7 @@
             // 
             // _AddGameTextBox
             // 
+            this._AddGameTextBox.Font = new System.Drawing.Font("Segoe UI", 9F);
             this._AddGameTextBox.Name = "_AddGameTextBox";
             this._AddGameTextBox.Size = new System.Drawing.Size(100, 25);
             // 
@@ -167,6 +168,7 @@
             this._GameListView.BackColor = System.Drawing.Color.Black;
             this._GameListView.Dock = System.Windows.Forms.DockStyle.Fill;
             this._GameListView.ForeColor = System.Drawing.Color.White;
+            this._GameListView.HideSelection = false;
             this._GameListView.LargeImageList = this._LogoImageList;
             this._GameListView.Location = new System.Drawing.Point(0, 25);
             this._GameListView.MultiSelect = false;
