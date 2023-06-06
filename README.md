@@ -6,6 +6,7 @@ Changes made in this fork:
 - https://github.com/gibbed/SteamAchievementManager/pull/128
 - Added sorting of games the global stats percentage of achievements (descending) using steam API
 - Added system of gaining achievement over time (specified by the user in minutes), here is how it works:
+- Added How Long To Beat (HLTB) system that makes call to their api to get an approx. time needed to complete the game with 100%
 
 1) Choose your game as usual.
 2) Click the new button 'Unlock all legit'.
