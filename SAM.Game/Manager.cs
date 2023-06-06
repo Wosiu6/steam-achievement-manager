@@ -21,7 +21,6 @@
  */
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using SAM.API.Types;
 using System;
 using System.Collections.Generic;
@@ -32,7 +31,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using APITypes = SAM.API.Types;
@@ -388,7 +386,6 @@ namespace SAM.Game
 
             Root root = JsonConvert.DeserializeObject<Root>(responseBody);
 
-
             return root.Achievementpercentages.Achievements
                 .OrderByDescending(x => x.Percent)
                 .ToList();
@@ -516,6 +513,8 @@ namespace SAM.Game
             _AchievementListView.ListViewItemSorter = new ListViewItemComparer();
             this._AchievementListView.EndUpdate();
             this._IsUpdatingAchievementList = false;
+
+            this.achievementsNumber_lbl.Text = $"{_AchievementListView.Items.Cast<ListViewItem>().Where(x => x.Checked).Count()}/{_AchievementListView.Items.Count} Done";
 
             this.DownloadNextIcon();
         }
@@ -908,8 +907,10 @@ namespace SAM.Game
         {
             IEnumerable<ListViewItem> lv = _AchievementListView.Items.Cast<ListViewItem>();
             var numberOfAchievementsToGet = lv.Where(x => !x.Checked).Count();
+            var numberOfAchievementsObtained = lv.Where(x => x.Checked).Count();
+            var totalNumberOfAchievements = lv.Count();
 
-            using (var form = new NumericPrompt())
+            using (var form = new NumericPrompt(_SteamClient.SteamApps001.GetAppData((uint)this._GameId, "name"), numberOfAchievementsObtained, totalNumberOfAchievements))
             {
                 var result = form.ShowDialog();
 

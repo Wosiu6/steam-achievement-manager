@@ -59,6 +59,7 @@
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.countdown_lbl = new System.Windows.Forms.Label();
             this.secondsCounter = new System.Windows.Forms.Timer(this.components);
+            this.achievementsNumber_lbl = new System.Windows.Forms.ToolStripLabel();
             _ToolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this._MainToolStrip.SuspendLayout();
             this._MainStatusStrip.SuspendLayout();
@@ -228,7 +229,8 @@
             this._InvertAllButton,
             this._UnlockAllButton,
             this._UnlockLegitButton,
-            this._StopLegitButton});
+            this._StopLegitButton,
+            this.achievementsNumber_lbl});
             this._AchievementsToolStrip.Location = new System.Drawing.Point(3, 3);
             this._AchievementsToolStrip.Name = "_AchievementsToolStrip";
             this._AchievementsToolStrip.Size = new System.Drawing.Size(602, 25);
@@ -355,6 +357,13 @@
             this.secondsCounter.Interval = 1000;
             this.secondsCounter.Tick += new System.EventHandler(this.secondsCounter_Tick);
             // 
+            // achievementsNumber_lbl
+            // 
+            this.achievementsNumber_lbl.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.achievementsNumber_lbl.Name = "achievementsNumber_lbl";
+            this.achievementsNumber_lbl.Size = new System.Drawing.Size(24, 22);
+            this.achievementsNumber_lbl.Text = "x/x";
+            // 
             // Manager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -416,6 +425,7 @@
         private System.Windows.Forms.Label countdown_lbl;
         private System.Windows.Forms.Timer secondsCounter;
         private System.Windows.Forms.ToolStripButton _StopLegitButton;
+        private System.Windows.Forms.ToolStripLabel achievementsNumber_lbl;
     }
 }
 
