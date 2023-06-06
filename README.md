@@ -25,3 +25,7 @@ I am aware of some of the bugs and I am sure there is plenty more, the code is f
 
 This is a fork of https://github.com/gibbed/SteamAchievementManager, credits to gibbed
 Most (if not all) icons are from the [Fugue Icons](http://p.yusukekamiyamane.com/) set.
+
+## Tags
+SAM, Steam Achievement Manager, HLTB, How Long To Beat, API
+
