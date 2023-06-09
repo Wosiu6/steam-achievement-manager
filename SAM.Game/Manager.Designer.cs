@@ -278,7 +278,7 @@
             this._UnlockLegitButton.Size = new System.Drawing.Size(23, 22);
             this._UnlockLegitButton.Text = "Unlock Legit";
             this._UnlockLegitButton.ToolTipText = "Unlock all achievements legitimately.";
-            this._UnlockLegitButton.Click += new System.EventHandler(this._UnlockLegitButton_Click);
+            this._UnlockLegitButton.Click += new System.EventHandler(this.UnlockLegitButton_Click);
             // 
             // _StopLegitButton
             // 
@@ -289,7 +289,7 @@
             this._StopLegitButton.Name = "_StopLegitButton";
             this._StopLegitButton.Size = new System.Drawing.Size(23, 22);
             this._StopLegitButton.Text = "Stop unlocking legit";
-            this._StopLegitButton.Click += new System.EventHandler(this._StopLegitButton_Click);
+            this._StopLegitButton.Click += new System.EventHandler(this.StopLegitButton_Click);
             // 
             // _StatisticsTabPage
             // 
@@ -334,7 +334,7 @@
             // 
             // backgroundWorker
             // 
-            this.backgroundWorker.Tick += new System.EventHandler(this.timer_Tick);
+            this.backgroundWorker.Tick += new System.EventHandler(this.BackgroundWorker_tick);
             // 
             // progressBar
             // 
@@ -355,7 +355,7 @@
             // secondsCounter
             // 
             this.secondsCounter.Interval = 1000;
-            this.secondsCounter.Tick += new System.EventHandler(this.secondsCounter_Tick);
+            this.secondsCounter.Tick += new System.EventHandler(this.SecondsCounter_Tick);
             // 
             // achievementsNumber_lbl
             // 

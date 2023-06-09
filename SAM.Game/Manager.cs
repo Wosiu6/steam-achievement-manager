@@ -467,8 +467,7 @@ namespace SAM.Game
                     continue;
                 }
 
-                bool isAchieved;
-                if (this._SteamClient.SteamUserStats.GetAchievementState(def.Id, out isAchieved) == false)
+                if (this._SteamClient.SteamUserStats.GetAchievementState(def.Id, out bool isAchieved) == false)
                 {
                     continue;
                 }
@@ -529,39 +528,33 @@ namespace SAM.Game
                     continue;
                 }
 
-                if (rdef is Stats.IntegerStatDefinition)
+                if (rdef is Stats.IntegerStatDefinition idef)
                 {
-                    var def = (Stats.IntegerStatDefinition)rdef;
-
-                    int value;
-                    if (this._SteamClient.SteamUserStats.GetStatValue(def.Id, out value))
+                    if (this._SteamClient.SteamUserStats.GetStatValue(idef.Id, out int value))
                     {
                         this._Statistics.Add(new Stats.IntStatInfo()
                         {
-                            Id = def.Id,
-                            DisplayName = def.DisplayName,
+                            Id = idef.Id,
+                            DisplayName = idef.DisplayName,
                             IntValue = value,
                             OriginalValue = value,
-                            IsIncrementOnly = def.IncrementOnly,
-                            Permission = def.Permission,
+                            IsIncrementOnly = idef.IncrementOnly,
+                            Permission = idef.Permission,
                         });
                     }
                 }
-                else if (rdef is Stats.FloatStatDefinition)
+                else if (rdef is Stats.FloatStatDefinition fdef)
                 {
-                    var def = (Stats.FloatStatDefinition)rdef;
-
-                    float value;
-                    if (this._SteamClient.SteamUserStats.GetStatValue(def.Id, out value))
+                    if (this._SteamClient.SteamUserStats.GetStatValue(fdef.Id, out float value))
                     {
                         this._Statistics.Add(new Stats.FloatStatInfo()
                         {
-                            Id = def.Id,
-                            DisplayName = def.DisplayName,
+                            Id = fdef.Id,
+                            DisplayName = fdef.DisplayName,
                             FloatValue = value,
                             OriginalValue = value,
-                            IsIncrementOnly = def.IncrementOnly,
-                            Permission = def.Permission,
+                            IsIncrementOnly = fdef.IncrementOnly,
+                            Permission = fdef.Permission,
                         });
                     }
                 }
@@ -598,8 +591,7 @@ namespace SAM.Game
             var achievements = new List<Stats.AchievementInfo>();
             foreach (ListViewItem item in this._AchievementListView.Items)
             {
-                var achievementInfo = item.Tag as Stats.AchievementInfo;
-                if (achievementInfo != null &&
+                if (item.Tag is Stats.AchievementInfo achievementInfo &&
                     achievementInfo.IsAchieved != item.Checked)
                 {
                     achievementInfo.IsAchieved = item.Checked;
@@ -647,9 +639,8 @@ namespace SAM.Game
 
             foreach (Stats.StatInfo stat in statistics)
             {
-                if (stat is Stats.IntStatInfo)
+                if (stat is Stats.IntStatInfo intStat)
                 {
-                    var intStat = (Stats.IntStatInfo)stat;
                     if (this._SteamClient.SteamUserStats.SetStatValue(
                         intStat.Id,
                         intStat.IntValue) == false)
@@ -666,9 +657,8 @@ namespace SAM.Game
                         return -1;
                     }
                 }
-                else if (stat is Stats.FloatStatInfo)
+                else if (stat is Stats.FloatStatInfo floatStat)
                 {
-                    var floatStat = (Stats.FloatStatInfo)stat;
                     if (this._SteamClient.SteamUserStats.SetStatValue(
                         floatStat.Id,
                         floatStat.FloatValue) == false)
@@ -884,9 +874,7 @@ namespace SAM.Game
                 return;
             }
 
-            var info = this._AchievementListView.Items[e.Index].Tag
-                       as Stats.AchievementInfo;
-            if (info == null)
+            if (!(this._AchievementListView.Items[e.Index].Tag is Stats.AchievementInfo info))
             {
                 return;
             }
@@ -903,68 +891,68 @@ namespace SAM.Game
             }
         }
 
-        private void _UnlockLegitButton_Click(object sender, EventArgs e)
+        private void UnlockLegitButton_Click(object sender, EventArgs e)
         {
             IEnumerable<ListViewItem> lv = _AchievementListView.Items.Cast<ListViewItem>();
-            var numberOfAchievementsToGet = lv.Where(x => !x.Checked).Count();
-            var numberOfAchievementsObtained = lv.Where(x => x.Checked).Count();
-            var totalNumberOfAchievements = lv.Count();
+            int numberOfAchievementsToGet = lv.Where(x => !x.Checked).Count();
+            int numberOfAchievementsObtained = lv.Where(x => x.Checked).Count();
+            int totalNumberOfAchievements = lv.Count();
 
-            using (var form = new NumericPrompt(_SteamClient.SteamApps001.GetAppData((uint)this._GameId, "name"), numberOfAchievementsObtained, totalNumberOfAchievements))
+            using (NumericPrompt form = new NumericPrompt(_SteamClient.SteamApps001.GetAppData((uint)this._GameId, "name"), numberOfAchievementsObtained, totalNumberOfAchievements))
             {
                 var result = form.ShowDialog();
 
                 if (result == DialogResult.OK && numberOfAchievementsToGet > 0)
                 {
                     TimeForAchievements = TimeSpan.FromMinutes(form.NumberOfMinutes ?? 60);
-                    TimeForAchievement = TimeSpan.FromMinutes((double)(form.NumberOfMinutes ?? 60) / (double)numberOfAchievementsToGet);
-                }
-                else
-                {
-                    return;
+                    TimeForAchievement = new TimeSpan(TimeForAchievements.Ticks / numberOfAchievementsToGet);
+
+                    backgroundWorker.Interval = (int)TimeForAchievement.TotalMilliseconds;
+
+                    SetProgressLegit(numberOfAchievementsObtained, totalNumberOfAchievements);
+
+                    backgroundWorker.Start();
+                    secondsCounter.Start();
                 }
             }
-
-            backgroundWorker.Interval = (int)TimeForAchievement.TotalMilliseconds;
-            Counter = (int)TimeForAchievement.TotalSeconds;
-            countdown_lbl.Text = Counter + "s";
-
-            SetProgressLegit(numberOfAchievementsToGet);
-
-            backgroundWorker.Start();
-            secondsCounter.Start();
         }
 
-        private void SetProgressLegit(int numberOfAchievementsToGet)
+        private void SetProgressLegit(int numberOfAchievementsObtained, int totalNumberOfAchievements)
         {
             _UnlockLegitButton.Enabled = false;
-            _StopLegitButton.Enabled = true; 
-            
+            _StopLegitButton.Enabled = true;
+
+            Counter = (int)TimeForAchievement.TotalSeconds;
+            countdown_lbl.Text = Counter.ToString() + "s (" + TimeForAchievements.Hours + "h " + TimeForAchievements.Minutes + "m)";
+
             progressBar.Visible = true;
-            progressBar.Maximum = numberOfAchievementsToGet;
-            progressBar.Value = 0;
+            progressBar.Maximum = totalNumberOfAchievements;
+            progressBar.Value = numberOfAchievementsObtained;
             progressBar.Step = 1;
 
+            _GameStatusLabel.Visible = false;
             progressBar.Show();
             countdown_lbl.Show();
         }
 
-        private void timer_Tick(object sender, EventArgs e)
+        private void BackgroundWorker_tick(object sender, EventArgs e)
         {
             IEnumerable<ListViewItem> lv = _AchievementListView.Items.Cast<ListViewItem>();
 
-            var achievement = lv
+            ListViewItem achievement = lv
                 .Where(x => !x.Checked)
                 .FirstOrDefault();
 
             if (achievement != null)
             {
                 achievement.Checked = true;
-                progressBar.Value++;
-                TimeForAchievements.Subtract(TimeSpan.FromMilliseconds(backgroundWorker.Interval));
-                RandomizeInterval();
+                TimeForAchievements = TimeForAchievements.Subtract(TimeSpan.FromMilliseconds(backgroundWorker.Interval));
+                IncreaseInterval();
                 StoreStatsAndAchievs();
                 Counter = (int)TimeForAchievement.TotalSeconds;
+
+                progressBar.PerformStep();
+                progressBar.Update();
             }
             else
             {
@@ -972,24 +960,39 @@ namespace SAM.Game
                 secondsCounter.Stop();
 
                 HideProgressLegit();
-                MessageBox.Show("All achievements completed legitemately.");
+                MessageBox.Show($"All achievements completed legitemately for {this.Text}");
+                this.Activate();
             }
             
         }
 
-        private void RandomizeInterval()
+        private void IncreaseInterval()
         {
-            backgroundWorker.Interval = new Random().Next(backgroundWorker.Interval, (int)(backgroundWorker.Interval * 1.1));
-            TimeForAchievement = TimeSpan.FromMilliseconds(backgroundWorker.Interval);
+            long oldIntervalTicks = TimeSpan.FromMilliseconds(backgroundWorker.Interval).Ticks;
+            long newIntervalTicks = GetRandomLong(oldIntervalTicks, (long)Math.Round(oldIntervalTicks * 1.2));
+
+            TimeForAchievement = TimeSpan.FromTicks(newIntervalTicks);
+            TimeForAchievements = TimeForAchievements.Add(TimeForAchievement.Subtract(TimeSpan.FromTicks(oldIntervalTicks))); //account for 'achievement difficulty' change
+
+            backgroundWorker.Interval = (int)TimeForAchievement.TotalMilliseconds;
+
+            long GetRandomLong(long min, long max)
+            {
+                byte[] buf = new byte[8];
+                new Random().NextBytes(buf);
+                long longRand = BitConverter.ToInt64(buf, 0);
+
+                return (Math.Abs(longRand % (max - min)) + min);
+            }
         }
 
-        private void secondsCounter_Tick(object sender, EventArgs e)
+        private void SecondsCounter_Tick(object sender, EventArgs e)
         {
-            Counter--;
-            countdown_lbl.Text = Counter.ToString() + "s (" + TimeForAchievements.TotalMinutes + "m)";
+            if (Counter > 0) Counter--;
+            countdown_lbl.Text = Counter.ToString() + "s (" + TimeForAchievements.Hours + "h " + TimeForAchievements.Minutes + "m)";
         }
 
-        private void _StopLegitButton_Click(object sender, EventArgs e)
+        private void StopLegitButton_Click(object sender, EventArgs e)
         {
             backgroundWorker.Stop();
             secondsCounter.Stop();
@@ -1004,6 +1007,8 @@ namespace SAM.Game
 
             progressBar.Hide();
             countdown_lbl.Hide();
+
+            _GameStatusLabel.Visible = true;
         }
     }
 }

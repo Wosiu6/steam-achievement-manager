@@ -104,7 +104,7 @@ namespace SAM.Game
             this.run_btn.TabIndex = 0;
             this.run_btn.Text = "Run";
             this.run_btn.UseVisualStyleBackColor = true;
-            this.run_btn.Click += new System.EventHandler(this.run_btn_Click);
+            this.run_btn.Click += new System.EventHandler(this.Run_btn_Click);
             // 
             // description_lbl
             // 
@@ -163,7 +163,7 @@ namespace SAM.Game
             this.link_lbl.TabIndex = 8;
             this.link_lbl.TabStop = true;
             this.link_lbl.Text = "https://howlongtobeat.com/game/";
-            this.link_lbl.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.link_lbl_LinkClicked);
+            this.link_lbl.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.Link_lbl_LinkClicked);
             // 
             // estimatedTimeLeftDesc_lbl
             // 
@@ -211,7 +211,7 @@ namespace SAM.Game
 
         }
 
-        private void run_btn_Click(object sender, System.EventArgs e)
+        private void Run_btn_Click(object sender, System.EventArgs e)
         {
             NumberOfMinutes = Convert.ToInt32(numericUpDown1.Value);
 
@@ -219,7 +219,7 @@ namespace SAM.Game
             this.Close();
         }
 
-        private void link_lbl_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private void Link_lbl_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             System.Diagnostics.Process.Start(((LinkLabel)sender).Text);
         }
