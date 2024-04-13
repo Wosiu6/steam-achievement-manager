@@ -20,6 +20,7 @@
  *    distribution.
  */
 
+using MoreLinq;
 using Newtonsoft.Json;
 using SAM.API.Types;
 using SAM.Game.Stats;
@@ -35,7 +36,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.ListView;
 using APITypes = SAM.API.Types;
 
 namespace SAM.Game
@@ -488,7 +488,7 @@ namespace SAM.Game
                     Percent = def.Percent
                 };
 
-                var item = new ListViewItem()
+                var item = new OrderableListViewItem()
                 {
                     Checked = isAchieved,
                     Tag = info,
@@ -515,7 +515,7 @@ namespace SAM.Game
             }
 
 
-            _AchievementListView.ListViewItemSorter = new ListViewItemComparer();
+            _AchievementListView.ListViewItemSorter = new ListViewItemPercentageComparer();
             this._AchievementListView.EndUpdate();
             this._IsUpdatingAchievementList = false;
 
@@ -1020,25 +1020,99 @@ namespace SAM.Game
 
         private void searchTextBox_TextChanged(object sender, EventArgs e)
         {
-            string searchText = searchTextBox.Text.Trim();
+            _AchievementListView.ListViewItemSorter = new ListViewSortComparer();
+            _AchievementListView.BeginUpdate();
 
-            if (searchText.Length == 0)
+            try
             {
-                _AchievementListView.TopItem = _AchievementListView.Items[0];
-                return;
+                foreach (OrderableListViewItem item in _AchievementListView.Items)
+                {
+                    item.Found = 0;
+                    item.Selected = false;
+                }
+
+                string searchText = searchTextBox.Text.Trim();
+
+                if (searchText.Length == 0)
+                {
+                    ResetListFilters();
+                    return;
+                }
+
+                _AchievementListView.Items
+                    .Cast<OrderableListViewItem>()
+                    .Where(item =>
+                        ((AchievementInfo)item.Tag)?.Name?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                         ((AchievementInfo)item.Tag)?.Description?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0)
+                    .ForEach(fi => fi.Found = 1);
+
+                ListViewItem foundItem = _AchievementListView.Items.Cast<OrderableListViewItem>().Where(x=>x.Found ==1).FirstOrDefault();
+
+                if (foundItem != null)
+                {
+                    _AchievementListView.TopItem = foundItem;
+                    _SelectedFilteredItem = foundItem.Index;
+                    foundItem.Selected = true;
+                }
+                else
+                {
+                    ResetListFilters();
+                }
+            }
+            finally
+            {
+                _AchievementListView.EndUpdate();
             }
 
-            var filteredItems = _AchievementListView.Items
-                .Cast<ListViewItem>()
-                .Where(item => ((AchievementInfo)item.Tag)?.Name?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0
-                           || ((AchievementInfo)item.Tag)?.Description?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
 
-            var foundItem = filteredItems.FirstOrDefault();
+        private void ResetListFilters()
+        {
+            _AchievementListView.TopItem = _AchievementListView.Items[0];
+            _AchievementListView.SelectedItems.Clear();
+            _AchievementListView.ListViewItemSorter = new ListViewItemPercentageComparer();
+        }
 
-            if (foundItem != null)
+        private void searchTextBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 13)
             {
-                _AchievementListView.TopItem = foundItem;
+                if (!searchTextBox.AcceptsReturn)
+                {
+                    nextSearchResult_btn.PerformClick();
+                }
             }
+        }
+
+
+        private int _SelectedFilteredItem;
+
+        private void nextSearchResult_btn_Click(object sender, EventArgs e)
+        {
+            _AchievementListView.BeginUpdate();
+
+            IEnumerable<OrderableListViewItem> filteredItems = _AchievementListView.Items.Cast<OrderableListViewItem>().Where(x => x.Found == 1);
+
+            if (filteredItems.Any())
+            {
+                _AchievementListView.SelectedItems.Clear();
+
+                if (filteredItems.Last().Index == _SelectedFilteredItem)
+                {
+                    int indexOfFirstFoundItem = filteredItems.First().Index;
+                    _AchievementListView.Items[indexOfFirstFoundItem].Selected = true;
+                    _SelectedFilteredItem = indexOfFirstFoundItem;
+                }
+                else
+                {
+                    _AchievementListView.Items[_SelectedFilteredItem + 1].Selected = true;
+                    _SelectedFilteredItem += 1;
+                }
+
+                _AchievementListView.TopItem = _AchievementListView.SelectedItems[0];
+            }
+
+            _AchievementListView.EndUpdate();
         }
     }
 }

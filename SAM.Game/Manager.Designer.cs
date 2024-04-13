@@ -54,6 +54,7 @@
             this._StopLegitButton = new System.Windows.Forms.ToolStripButton();
             this.achievementsNumber_lbl = new System.Windows.Forms.ToolStripLabel();
             this.searchTextBox = new System.Windows.Forms.ToolStripTextBox();
+            this.nextSearchResult_btn = new System.Windows.Forms.ToolStripButton();
             this._StatisticsTabPage = new System.Windows.Forms.TabPage();
             this._EnableStatsEditingCheckBox = new System.Windows.Forms.CheckBox();
             this._StatisticsDataGridView = new System.Windows.Forms.DataGridView();
@@ -232,7 +233,8 @@
             this._UnlockLegitButton,
             this._StopLegitButton,
             this.achievementsNumber_lbl,
-            this.searchTextBox});
+            this.searchTextBox,
+            this.nextSearchResult_btn});
             this._AchievementsToolStrip.Location = new System.Drawing.Point(3, 3);
             this._AchievementsToolStrip.Name = "_AchievementsToolStrip";
             this._AchievementsToolStrip.Size = new System.Drawing.Size(602, 25);
@@ -308,7 +310,20 @@
             this.searchTextBox.Margin = new System.Windows.Forms.Padding(1, 0, 5, 0);
             this.searchTextBox.Name = "searchTextBox";
             this.searchTextBox.Size = new System.Drawing.Size(100, 25);
+            this.searchTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.searchTextBox_KeyPress);
             this.searchTextBox.TextChanged += new System.EventHandler(this.searchTextBox_TextChanged);
+            // 
+            // nextSearchResult_btn
+            // 
+            this.nextSearchResult_btn.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.nextSearchResult_btn.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.nextSearchResult_btn.Image = ((System.Drawing.Image)(resources.GetObject("nextSearchResult_btn.Image")));
+            this.nextSearchResult_btn.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.nextSearchResult_btn.Name = "nextSearchResult_btn";
+            this.nextSearchResult_btn.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.nextSearchResult_btn.Size = new System.Drawing.Size(23, 22);
+            this.nextSearchResult_btn.TextImageRelation = System.Windows.Forms.TextImageRelation.TextBeforeImage;
+            this.nextSearchResult_btn.Click += new System.EventHandler(this.nextSearchResult_btn_Click);
             // 
             // _StatisticsTabPage
             // 
@@ -439,6 +454,7 @@
         private System.Windows.Forms.ToolStripButton _StopLegitButton;
         private System.Windows.Forms.ToolStripLabel achievementsNumber_lbl;
         private System.Windows.Forms.ToolStripTextBox searchTextBox;
+        private System.Windows.Forms.ToolStripButton nextSearchResult_btn;
     }
 }
 

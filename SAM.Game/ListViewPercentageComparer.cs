@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace SAM.Game
 {
-    class ListViewItemComparer : IComparer
+    class ListViewItemPercentageComparer : IComparer
     {
         public int Compare(object x, object y)
         {
