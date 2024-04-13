@@ -52,6 +52,8 @@
             this._UnlockAllButton = new System.Windows.Forms.ToolStripButton();
             this._UnlockLegitButton = new System.Windows.Forms.ToolStripButton();
             this._StopLegitButton = new System.Windows.Forms.ToolStripButton();
+            this.achievementsNumber_lbl = new System.Windows.Forms.ToolStripLabel();
+            this.searchTextBox = new System.Windows.Forms.ToolStripTextBox();
             this._StatisticsTabPage = new System.Windows.Forms.TabPage();
             this._EnableStatsEditingCheckBox = new System.Windows.Forms.CheckBox();
             this._StatisticsDataGridView = new System.Windows.Forms.DataGridView();
@@ -59,7 +61,6 @@
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.countdown_lbl = new System.Windows.Forms.Label();
             this.secondsCounter = new System.Windows.Forms.Timer(this.components);
-            this.achievementsNumber_lbl = new System.Windows.Forms.ToolStripLabel();
             _ToolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this._MainToolStrip.SuspendLayout();
             this._MainStatusStrip.SuspendLayout();
@@ -230,7 +231,8 @@
             this._UnlockAllButton,
             this._UnlockLegitButton,
             this._StopLegitButton,
-            this.achievementsNumber_lbl});
+            this.achievementsNumber_lbl,
+            this.searchTextBox});
             this._AchievementsToolStrip.Location = new System.Drawing.Point(3, 3);
             this._AchievementsToolStrip.Name = "_AchievementsToolStrip";
             this._AchievementsToolStrip.Size = new System.Drawing.Size(602, 25);
@@ -290,6 +292,23 @@
             this._StopLegitButton.Size = new System.Drawing.Size(23, 22);
             this._StopLegitButton.Text = "Stop unlocking legit";
             this._StopLegitButton.Click += new System.EventHandler(this.StopLegitButton_Click);
+            // 
+            // achievementsNumber_lbl
+            // 
+            this.achievementsNumber_lbl.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.achievementsNumber_lbl.Name = "achievementsNumber_lbl";
+            this.achievementsNumber_lbl.Size = new System.Drawing.Size(24, 22);
+            this.achievementsNumber_lbl.Text = "x/x";
+            // 
+            // searchTextBox
+            // 
+            this.searchTextBox.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.searchTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.searchTextBox.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.searchTextBox.Margin = new System.Windows.Forms.Padding(1, 0, 5, 0);
+            this.searchTextBox.Name = "searchTextBox";
+            this.searchTextBox.Size = new System.Drawing.Size(100, 25);
+            this.searchTextBox.TextChanged += new System.EventHandler(this.searchTextBox_TextChanged);
             // 
             // _StatisticsTabPage
             // 
@@ -357,13 +376,6 @@
             this.secondsCounter.Interval = 1000;
             this.secondsCounter.Tick += new System.EventHandler(this.SecondsCounter_Tick);
             // 
-            // achievementsNumber_lbl
-            // 
-            this.achievementsNumber_lbl.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.achievementsNumber_lbl.Name = "achievementsNumber_lbl";
-            this.achievementsNumber_lbl.Size = new System.Drawing.Size(24, 22);
-            this.achievementsNumber_lbl.Text = "x/x";
-            // 
             // Manager
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -426,6 +438,7 @@
         private System.Windows.Forms.Timer secondsCounter;
         private System.Windows.Forms.ToolStripButton _StopLegitButton;
         private System.Windows.Forms.ToolStripLabel achievementsNumber_lbl;
+        private System.Windows.Forms.ToolStripTextBox searchTextBox;
     }
 }
 
