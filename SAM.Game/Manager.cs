@@ -931,8 +931,7 @@ namespace SAM.Game
             _StopLegitButton.Enabled = true;
 
             Counter = (int)TimeForAchievement.TotalSeconds;
-            string countdownText = $"{Counter}s ({TimeForAchievements.TotalHours}h {TimeForAchievements.Minutes}m)";
-            countdown_lbl.Text = countdownText;
+            countdown_lbl.Text = Counter.ToString() + "s (" + TimeForAchievements.TotalHours + "h " + TimeForAchievements.Minutes + "m)";
 
             progressBar.Visible = true;
             progressBar.Maximum = totalNumberOfAchievements;
@@ -999,8 +998,7 @@ namespace SAM.Game
         {
             if (Counter > 0) Counter--;
 
-            string countdownText = $"{Counter}s ({TimeForAchievements.TotalHours}h {TimeForAchievements.Minutes}m)";
-            countdown_lbl.Text = countdownText;
+            countdown_lbl.Text = Counter.ToString() + "s (" + TimeForAchievements.TotalHours + "h " + TimeForAchievements.Minutes + "m)";
         }
 
         private void StopLegitButton_Click(object sender, EventArgs e)
