@@ -381,9 +381,11 @@
             // 
             // countdown_lbl
             // 
-            this.countdown_lbl.Location = new System.Drawing.Point(536, 366);
+            this.countdown_lbl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.countdown_lbl.AutoSize = true;
+            this.countdown_lbl.Location = new System.Drawing.Point(536, 370);
             this.countdown_lbl.Name = "countdown_lbl";
-            this.countdown_lbl.Size = new System.Drawing.Size(84, 26);
+            this.countdown_lbl.Size = new System.Drawing.Size(0, 13);
             this.countdown_lbl.TabIndex = 7;
             // 
             // secondsCounter

@@ -34,6 +34,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using APITypes = SAM.API.Types;
@@ -930,7 +931,8 @@ namespace SAM.Game
             _StopLegitButton.Enabled = true;
 
             Counter = (int)TimeForAchievement.TotalSeconds;
-            countdown_lbl.Text = Counter.ToString() + "s (" + TimeForAchievements.Hours + "h " + TimeForAchievements.Minutes + "m)";
+            string countdownText = $"{Counter}s ({TimeForAchievements.TotalHours}h {TimeForAchievements.Minutes}m)";
+            countdown_lbl.Text = countdownText;
 
             progressBar.Visible = true;
             progressBar.Maximum = totalNumberOfAchievements;
@@ -996,7 +998,9 @@ namespace SAM.Game
         private void SecondsCounter_Tick(object sender, EventArgs e)
         {
             if (Counter > 0) Counter--;
-            countdown_lbl.Text = Counter.ToString() + "s (" + TimeForAchievements.Hours + "h " + TimeForAchievements.Minutes + "m)";
+
+            string countdownText = $"{Counter}s ({TimeForAchievements.TotalHours}h {TimeForAchievements.Minutes}m)";
+            countdown_lbl.Text = countdownText;
         }
 
         private void StopLegitButton_Click(object sender, EventArgs e)
@@ -1083,7 +1087,6 @@ namespace SAM.Game
                 }
             }
         }
-
 
         private int _SelectedFilteredItem;
 
